@@ -112,15 +112,6 @@ define php::pecl::module (
         path      => $path,
         require   => [ Class['php::pear'], Class['php::devel']],
       }
-      if $php::bool_augeas == true {
-        php::augeas { "augeas-${name}":
-          ensure => $ensure,
-          entry  => "PHP/extension[. = \"${name}.so\"]",
-          value  => "${name}.so",
-          notify => $manage_service_autorestart,
-          target => $config_file,
-        }
-      }
     }
   } # End Case
 }
