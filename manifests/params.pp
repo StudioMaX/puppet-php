@@ -105,4 +105,12 @@ class php::params {
   $debug = false
   $audit_only = false
 
+  $monitor = ''
+  $monitor_tool = ''
+  $monitor_target = ''
+  $config_file_init = ''
+  $pid_file = ''
+  $port = ''
+  $protocol = ''
+
 }
