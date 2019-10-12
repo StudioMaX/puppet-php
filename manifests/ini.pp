@@ -33,35 +33,49 @@ define php::ini (
 
   include php
 
+  $realservice_autorestart = $::php::realservice_autorestart
+
   $http_sapi = $::operatingsystem ? {
     /(?i:Ubuntu|Debian|Mint|SLES|OpenSuSE)/ => '/apache2/',
     default                                 => '/',
   }
 
-  if ($sapi_target == 'all') {
-
-    file { "${config_dir}${http_sapi}conf.d/${target}":
-      ensure  => 'present',
-      content => template($template),
-      require => Package[$package],
-      before  => File["${config_dir}/cli/conf.d/${target}"],
+  case $::osfamily {
+    'RedHat' : {
+      file { "${config_dir}/${target}":
+        ensure  => 'present',
+        content => template($template),
+        require => Package[$php::package],
+        notify  => $realservice_autorestart,
+      }
     }
+    default : {
+      if ($sapi_target == 'all') {
 
-    file { "${config_dir}/cli/conf.d/${target}":
-      ensure  => 'present',
-      content => template($template),
-      require => Package[$package],
-      notify  => Service[$service],
+        file { "${config_dir}${http_sapi}conf.d/${target}":
+          ensure  => 'present',
+          content => template($template),
+          require => Package[$package],
+          before  => File["${config_dir}/cli/conf.d/${target}"],
+          notify  => $realservice_autorestart,
+        }
+
+        file { "${config_dir}/cli/conf.d/${target}":
+          ensure  => 'present',
+          content => template($template),
+          require => Package[$package],
+        }
+
+      }else{
+        file { "${config_dir}/${sapi_target}/conf.d/${target}":
+          ensure  => 'present',
+          content => template($template),
+          require => Package[$package],
+          notify  => $realservice_autorestart,
+        }
+
+      }
     }
-
-  }else{
-    file { "${config_dir}/${sapi_target}/conf.d/${target}":
-      ensure  => 'present',
-      content => template($template),
-      require => Package[$package],
-      notify  => Service[$service],
-    }
-
   }
 
 }
